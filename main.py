@@ -56,12 +56,28 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, padding="same",
-                    kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
-    output = tf.layers.conv2d_transpose(conv_1x1, num_classes, 4, 2, padding="same",
-                    kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
+    # conv7
+    temp = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1, padding="same",
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
+    # conv7_2x
+    temp = tf.layers.conv2d_transpose(temp, num_classes, 4, 2, padding="same",
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
+    # pool4 and conv7_2x
+    pool4 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1, padding="same",
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
+    temp = tf.add(temp, pool4);
+    # pool4_2x and conv7_4x
+    temp = tf.layers.conv2d_transpose(temp, num_classes, 4, 2, padding="same",
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
+    # pool3 and pool4_2x and conv7_4x
+    pool3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1, padding="same",
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
+    temp = tf.add(temp, pool3)
+    # final output
+    output = tf.layers.conv2d_transpose(temp, num_classes, 16, 8, padding="same",
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
 
-    return None
+    return output
 
 tests.test_layers(layers)
 
@@ -78,9 +94,12 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     # Use adam optimizer
 
     # TODO: Implement function
-    logits = tf.reshape(input, (-1, num_classes))
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = logits, labels =  correct_label))
+    optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate)
+    training_operation = optimizer.minimize(cross_entropy_loss)
 
-    return None, None, None
+    return logits, training_operation, cross_entropy_loss
 
 tests.test_optimize(optimize)
 
@@ -101,10 +120,12 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
-    for epoch in epochs:
-        for image, label in get_batches_fn(batach_size):
+    for i in range(epochs):
+        for image, label in get_batches_fn(batch_size):
             # Training
+            sess.run(train_op)#, feed_dict={x: input_image, y: correct_label, keep_prob: keep_prob})
             pass
+        print("EPOCH {} ...".format(i+1))
     pass
 
 tests.test_train_nn(train_nn)
