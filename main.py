@@ -123,7 +123,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     for i in range(epochs):
         for image, label in get_batches_fn(batch_size):
             # Training
-            sess.run(train_op)#, feed_dict={x: input_image, y: correct_label, keep_prob: keep_prob})
+            sess.run(train_op, feed_dict = {input_image: image, correct_label: label, learning_rate: 0.001, keep_prob: 1.0})
             pass
         print("EPOCH {} ...".format(i+1))
     pass
@@ -155,13 +155,21 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
+        correct_label = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], num_classes))
+        learning_rate = tf.placeholder(tf.float32)
         input_image, keep_prob, layer3_out, layer4_out, layer7_out = load_vgg(sess, vgg_path)
         layer_output = layers(layer3_out, layer4_out, layer7_out, num_classes)
+        logits, train_op, cross_entropy_loss = optimize(layer_output, correct_label, learning_rate, num_classes)
 
         # TODO: Train NN using the train_nn function
+        epochs = 30
+        batch_size = 8
+        sess.run(tf.global_variables_initializer())
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
+                     correct_label, keep_prob, learning_rate)
 
         # TODO: Save inference data using helper.save_inference_samples
-        #  helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
         # OPTIONAL: Apply the trained model to a video
 
