@@ -129,6 +129,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             print('.', end='', flush=True)
             total_loss += sess.run(cross_entropy_loss, feed_dict = {input_image: image, correct_label: label, keep_prob: 1.0})
             pass
+        print('.')
         print("EPOCH {} ...".format(i+1))
         print("Cross entropy loss = {:.3f}".format(total_loss))
 
