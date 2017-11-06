@@ -62,8 +62,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
             activation=tf.nn.relu)
     # conv7_2x
     temp = tf.layers.conv2d_transpose(temp, num_classes, 4, 2, padding="same",
-            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3),
-            activation=tf.nn.relu)
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
     # pool4 and conv7_2x
     pool4 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1, padding="same",
             kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3),
@@ -71,8 +70,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     temp = tf.add(temp, pool4);
     # pool4_2x and conv7_4x
     temp = tf.layers.conv2d_transpose(temp, num_classes, 4, 2, padding="same",
-            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3),
-            activation=tf.nn.relu)
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
     # pool3 and pool4_2x and conv7_4x
     pool3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1, padding="same",
             kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3),
@@ -80,8 +78,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     temp = tf.add(temp, pool3)
     # final output
     output = tf.layers.conv2d_transpose(temp, num_classes, 16, 8, padding="same",
-            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3),
-            activation=tf.nn.relu)
+            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
 
     return output
 
